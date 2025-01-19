@@ -1,5 +1,6 @@
 import { dirname, fromFileUrl, resolve } from "jsr:@std/path";
 import { ensureDirSync } from "jsr:@std/fs";
+import { stringify } from "jsr:@std/yaml";
 import { BoltAction } from "../learn-from-bolts-new/message-parser.ts";
 
 const __dirname = dirname(fromFileUrl(import.meta.url));
@@ -65,6 +66,11 @@ export class Workspace {
   }
 
   makeItHappen() {
+    Deno.writeFileSync(
+      resolve(this.appRoot, `.llm.yaml`),
+      new TextEncoder().encode(stringify(this.artifacts))
+    );
+
     for (const artifact of this.artifacts) {
       console.log(`processing artifact: ${artifact.name}...`);
 
