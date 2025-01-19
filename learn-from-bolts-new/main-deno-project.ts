@@ -9,7 +9,7 @@ const systemPrompt = Deno.readTextFileSync(
   resolve(__dirname, "deno-project-system-prompt.md")
 );
 
-const design = `使用 Deno 开发一个 API，
+const apiDesign = `使用 Deno 开发一个 API，
 启动端口：3000
 
 endpoints：
@@ -28,6 +28,18 @@ endpoints：
   - request: none
   - response: { "count": $count }
   - description：当前访问 /count 次数
+`;
+
+const _cliDesign = `使用 Deno 开发一个 CLI，实现基于命令行的 Todo App：
+
+- 数据存储在 todo.json 中
+- 支持添加、删除、查看、标记完成、清空所有任务等功能
+- 命令如下：
+  - help，显示帮助信息
+  - add <task>，添加任务
+  - remove <task>，删除任务
+  - list，显示所有任务
+  - done <task>，标记任务完成
 `;
 
 async function main() {
@@ -57,7 +69,7 @@ async function main() {
       { role: "system", content: systemPrompt },
       {
         role: "user",
-        content: design,
+        content: apiDesign,
       },
     ],
     model: provider.model,
