@@ -8,15 +8,27 @@ const WORKSPACE_ROOT = resolve(__dirname, "../tmp");
 
 ensureDirSync(WORKSPACE_ROOT);
 
-type Artifact = {
-  id: string;
-  name: string;
-  closed: boolean;
-  actions: Action[];
+type BaseAction = {
+  __reason?: string;
+  content: string;
 };
 
-// TODO: built our own types later!
-type Action = BoltAction;
+type FileAction = BaseAction & {
+  type: "file";
+  filePath: string;
+};
+
+type ShellAction = BaseAction & {
+  type: "shell";
+};
+
+export type Action = FileAction | ShellAction;
+
+export type Artifact = {
+  id: string;
+  name: string;
+  actions: Action[];
+};
 
 export class Workspace {
   appRoot: string = Deno.makeTempDirSync({
@@ -29,20 +41,21 @@ export class Workspace {
       throw new Error(`Artifact with id ${id} already exists`);
     }
 
-    const artifact = { id, name, closed: false, actions: [] };
+    const artifact = { id, name, actions: [] };
     this.artifacts.push(artifact);
 
     return artifact;
   }
 
+  /**
+   * @deprecated only used in early version
+   */
   closeArtifact(id: string): Artifact {
     const artifact = this.artifacts.find((artifact) => artifact.id === id);
 
     if (!artifact) {
       throw new Error(`Artifact with id ${id} does not exist`);
     }
-
-    artifact.closed = true;
 
     return artifact;
   }
@@ -54,10 +67,6 @@ export class Workspace {
 
     if (!artifact) {
       throw new Error(`Artifact with id ${artifactId} does not exist`);
-    }
-
-    if (artifact.closed) {
-      throw new Error(`Artifact with id ${artifactId} is already closed`);
     }
 
     artifact.actions.push(action);
@@ -76,6 +85,11 @@ export class Workspace {
 
       for (const action of artifact.actions) {
         console.log(`processing a ${action.type} action...`);
+        if (action.__reason) {
+          console.log(
+            `the LLM perform this action with reason: "${action.__reason}"`
+          );
+        }
 
         switch (action.type) {
           case "file": {
