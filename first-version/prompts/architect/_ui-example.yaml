@@ -1,0 +1,221 @@
+id: basic-ui-three-layer-crud
+name: UI Three-Layer CRUD Structure
+actions:
+  - __reason: Create design.md explaining the UI-oriented architecture, with a Mermaid flowchart, dev/build/test/lint commands, DI approach, and comment placement rule.
+    type: file
+    filePath: design.md
+    content: |
+      # Architecture Design
+
+      This project implements a web UI for CRUD operations, organized into interface (UI), workflow, and core layers.
+
+      ```mermaid
+      graph LR
+        A[src/index.ts] --> B[interface/create-record.ts]
+        A[src/index.ts] --> C[interface/read-record.ts]
+        A[src/index.ts] --> D[interface/update-record.ts]
+        A[src/index.ts] --> E[interface/delete-record.ts]
+        B[interface/create-record.ts] --> F[workflow/create-record.ts]
+        C[interface/read-record.ts] --> G[workflow/read-record.ts]
+        D[interface/update-record.ts] --> H[workflow/update-record.ts]
+        E[interface/delete-record.ts] --> I[workflow/delete-record.ts]
+        F[workflow/create-record.ts] --> J[core/create-record.ts]
+        G[workflow/read-record.ts] --> K[core/read-record.ts]
+        H[workflow/update-record.ts] --> L[core/update-record.ts]
+        I[workflow/delete-record.ts] --> M[core/delete-record.ts]
+      ```
+
+      ## Commands
+      - **dev**: `deno run src/index.ts`
+      - **build**: `echo 'No build step implemented yet'`
+      - **test**: `deno test`
+      - **lint**: `deno lint`
+
+      ## Test-Friendly Coding
+      All functions accept any needed external dependencies as parameters, making them easy to mock.
+
+      ## Comment Placement
+      Comments appear directly above each definition, with empty function bodies.
+  - __reason: Create the main entry file src/index.ts, which registers UI routes and renders corresponding resources.
+    type: file
+    filePath: src/index.ts
+    content: |
+      // TODO(ai-coder): Main entry for the web UI
+      import { createUIRecord } from "../interface/create-record.ts";
+      import { readUIRecord } from "../interface/read-record.ts";
+      import { updateUIRecord } from "../interface/update-record.ts";
+      import { deleteUIRecord } from "../interface/delete-record.ts";
+
+      import { serve } from "https://deno.land/std@0.203.0/http/server.ts";
+
+      // TODO(ai-coder): Setup server and register UI routes
+      function main() {
+        const server = serve({ port: 8000 });
+        console.log("UI server running on http://localhost:8000/");
+
+        for await (const req of server) {
+          const url = new URL(req.url, `http://${req.headers.get("host")}`);
+          const pathname = url.pathname;
+          const method = req.method;
+
+          if (method === "GET" && pathname === "/create") {
+            createUIRecord();
+            req.respond({ body: "<h1>Create Record Page</h1>" });
+          } else if (method === "GET" && pathname === "/read") {
+            readUIRecord();
+            req.respond({ body: "<h1>Read Records Page</h1>" });
+          } else if (method === "GET" && pathname === "/update") {
+            updateUIRecord();
+            req.respond({ body: "<h1>Update Record Page</h1>" });
+          } else if (method === "GET" && pathname === "/delete") {
+            deleteUIRecord();
+            req.respond({ body: "<h1>Delete Record Page</h1>" });
+          } else {
+            req.respond({ status: 404, body: "<h1>404 Not Found</h1>" });
+          }
+        }
+      }
+
+      main();
+  - __reason: Interface file for creating a record in the UI.
+    type: file
+    filePath: interface/create-record.ts
+    content: |
+      // TODO(ai-coder): UI for creating a record
+      import { createRecordWorkflow } from "../workflow/create-record.ts";
+      import { createRecordCore } from "../core/create-record.ts";
+
+      // TODO(ai-coder): Single responsibility for handling create operation in UI
+      export function createUIRecord() {
+        createRecordWorkflow({ createRecordCore });
+      }
+  - __reason: Interface file for reading records in the UI.
+    type: file
+    filePath: interface/read-record.ts
+    content: |
+      // TODO(ai-coder): UI for reading records
+      import { readRecordWorkflow } from "../workflow/read-record.ts";
+      import { readRecordCore } from "../core/read-record.ts";
+
+      // TODO(ai-coder): Single responsibility for handling read operation in UI
+      export function readUIRecord() {
+        readRecordWorkflow({ readRecordCore });
+      }
+  - __reason: Interface file for updating a record in the UI.
+    type: file
+    filePath: interface/update-record.ts
+    content: |
+      // TODO(ai-coder): UI for updating a record
+      import { updateRecordWorkflow } from "../workflow/update-record.ts";
+      import { updateRecordCore } from "../core/update-record.ts";
+
+      // TODO(ai-coder): Single responsibility for handling update operation in UI
+      export function updateUIRecord() {
+        updateRecordWorkflow({ updateRecordCore });
+      }
+  - __reason: Interface file for deleting a record in the UI.
+    type: file
+    filePath: interface/delete-record.ts
+    content: |
+      // TODO(ai-coder): UI for deleting a record
+      import { deleteRecordWorkflow } from "../workflow/delete-record.ts";
+      import { deleteRecordCore } from "../core/delete-record.ts";
+
+      // TODO(ai-coder): Single responsibility for handling delete operation in UI
+      export function deleteUIRecord() {
+        deleteRecordWorkflow({ deleteRecordCore });
+      }
+  - __reason: Interface shared file for the UI layer.
+    type: file
+    filePath: interface/ui-shared.ts
+    content: |
+      // TODO(ai-coder): Shared logic or configuration for the UI layer
+      export const uiSharedConfig = {};
+  - __reason: Workflow file for creating a record.
+    type: file
+    filePath: workflow/create-record.ts
+    content: |
+      // TODO(ai-coder): Workflow for creating a record
+      interface CreateRecordDeps {
+        createRecordCore: () => void;
+      }
+
+      // TODO(ai-coder): Orchestrate the creation logic
+      export function createRecordWorkflow(deps: CreateRecordDeps) {
+      }
+  - __reason: Workflow file for reading records.
+    type: file
+    filePath: workflow/read-record.ts
+    content: |
+      // TODO(ai-coder): Workflow for reading records
+      interface ReadRecordDeps {
+        readRecordCore: () => void;
+      }
+
+      // TODO(ai-coder): Orchestrate the read logic
+      export function readRecordWorkflow(deps: ReadRecordDeps) {
+      }
+  - __reason: Workflow file for updating a record.
+    type: file
+    filePath: workflow/update-record.ts
+    content: |
+      // TODO(ai-coder): Workflow for updating a record
+      interface UpdateRecordDeps {
+        updateRecordCore: () => void;
+      }
+
+      // TODO(ai-coder): Orchestrate update logic
+      export function updateRecordWorkflow(deps: UpdateRecordDeps) {
+      }
+  - __reason: Workflow file for deleting a record.
+    type: file
+    filePath: workflow/delete-record.ts
+    content: |
+      // TODO(ai-coder): Workflow for deleting a record
+      interface DeleteRecordDeps {
+        deleteRecordCore: () => void;
+      }
+
+      // TODO(ai-coder): Orchestrate delete logic
+      export function deleteRecordWorkflow(deps: DeleteRecordDeps) {
+      }
+  - __reason: Workflow shared file.
+    type: file
+    filePath: workflow/workflow-shared.ts
+    content: |
+      // TODO(ai-coder): Shared logic within the workflow layer
+      export const workflowSharedConfig = {};
+  - __reason: Core file for creating a record.
+    type: file
+    filePath: core/create-record.ts
+    content: |
+      // TODO(ai-coder): Core logic for creating a record
+      export function createRecordCore() {
+      }
+  - __reason: Core file for reading records.
+    type: file
+    filePath: core/read-record.ts
+    content: |
+      // TODO(ai-coder): Core logic for reading records
+      export function readRecordCore() {
+      }
+  - __reason: Core file for updating a record.
+    type: file
+    filePath: core/update-record.ts
+    content: |
+      // TODO(ai-coder): Core logic for updating a record
+      export function updateRecordCore() {
+      }
+  - __reason: Core file for deleting a record.
+    type: file
+    filePath: core/delete-record.ts
+    content: |
+      // TODO(ai-coder): Core logic for deleting a record
+      export function deleteRecordCore() {
+      }
+  - __reason: Core shared file.
+    type: file
+    filePath: core/core-shared.ts
+    content: |
+      // TODO(ai-coder): Shared logic within the core layer
+      export const coreSharedConfig = {};

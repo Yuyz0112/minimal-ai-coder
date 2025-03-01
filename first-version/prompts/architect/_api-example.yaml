@@ -1,0 +1,203 @@
+
+id: blog-system-api-server
+name: API server for a blog system
+actions:
+  - __reason: Create design.md with real dev/build/test/lint commands, DI-based test-friendly style, and single entry via src/index.ts.
+    type: file
+    filePath: design.md
+    content: |
+      # Architecture Design
+
+      This project provides a RESTful API for CRUD operations, organized into interface, workflow, and core layers.
+
+      The first version only implement the create and update post operation.
+
+      ## Commands
+      - **dev**: `deno run --allow-net src/index.ts`
+      - **build**: `echo 'No build step implemented yet'`
+      - **test**: `deno test`
+      - **lint**: `deno lint`
+
+      ## Test-Friendly Coding
+      All workflow functions receive dependencies as parameters, making them easy to mock during unit tests.
+
+      ## Comment Placement
+      Comments are immediately above each function or variable definition, with empty function bodies.
+
+  - __reason: Create main entry point
+    type: file
+    filePath: src/index.ts
+    content: |
+      import { Application } from "https://deno.land/x/oak/mod.ts";
+      import { createPostRouter } from "./interface/create-post.ts";
+      import { updatePostRouter } from "./interface/update-post.ts";
+
+      const app = new Application();
+
+      // TODO(ai-coder): setup API routes
+      app.use(createPostRouter.routes());
+      app.use(updatePostRouter.routes());
+      
+      await app.listen({ port: 8000 });
+
+  - __reason: Interface layer - post creation
+    type: file
+    filePath: src/interface/create-post.ts
+    content: |
+      import { Router } from "https://deno.land/x/oak/mod.ts";
+      import { createPostWorkflow } from "../workflow/create-post.ts";
+
+      export const createPostRouter = new Router();
+
+      // TODO(ai-coder): call createPostWorkflow with route args, transform args to workflow args if needed, return response to client.
+      router.post("/posts", async (ctx) => {});
+
+  - __reason: Interface layer - post update
+    type: file
+    filePath: src/interface/update-post.ts
+    content: |
+      import { Router } from "https://deno.land/x/oak/mod.ts";
+      import { updatePostWorkflow } from "../workflow/update-post.ts";
+
+      export const updatePostRouter = new Router();
+
+      // TODO(ai-coder): call updatePostWorkflow with route args, transform args to workflow args if needed, return response to client.
+      router.put("/posts/:id", async (ctx) => {});
+
+  - __reason: Workflow layer - post creation
+    type: file
+    filePath: src/workflow/create-post.ts
+    content: |
+      import { createPostCore } from "../core/create-post.ts";
+      import { validatePostContentCore } from "../core/validation.ts";
+
+      export interface CreatePostWorkflowArgs {
+        title: string;
+        content: string;
+      }
+
+      interface CreatePostWorkflowDeps {
+        createPostCore: typeof createPostCore;
+        validatePostContentCore: typeof validatePostContentCore;
+      }
+
+      // TODO(ai-coder): Factory function to create the createPostWorkflow function. The workflow function will orchestrate create post logic, transform workflow args to core args if needed
+      export function createPostWorkflowFactory(deps: CreatePostWorkflowDeps) {
+        return function createPostWorkflow(args: CreatePostWorkflowArgs) {}
+      }
+
+      export const createPostWorkflow = createPostWorkflowFactory({ createPostCore, validatePostContentCore });
+
+  - __reason: Workflow layer - post update
+    type: file
+    filePath: src/workflow/update-post.ts
+    content: |
+      import { updatePostCore } from "../core/update-post.ts";
+      import { validatePostContentCore } from "../core/validation.ts";
+
+      export interface UpdatePostWorkflowArgs {
+        id: string;
+        title?: string;
+        content?: string;
+      }
+
+      interface UpdatePostWorkflowDeps {
+        updatePostCore: typeof updatePostCore;
+        validatePostContentCore: typeof validatePostContentCore;
+      }
+
+      // TODO(ai-coder): Factory function to update the updatePostWorkflow function. The workflow function will orchestrate update post logic, transform workflow args to core args if needed
+      export function updatePostWorkflowFactory(deps: UpdatePostWorkflowDeps) {
+        return function updatePostWorkflow(args: UpdatePostWorkflowArgs) {}
+      }
+
+      export const updatePostWorkflow = updatePostWorkflowFactory({ createPostCore, validatePostContentCore });
+
+  - __reason: Core layer - create post
+    type: file
+    filePath: src/core/create-post.ts
+    content: |
+      import { db, Post } from './shared.ts'
+
+      // TODO(ai-coder): Define the core args
+      export interface CreatePostCoreArgs {
+        title: string;
+        content: string;
+      }
+
+      // TODO(ai-coder): Implement the core method for creating a Post, using the db.createPost functions
+      export function createPostCore(args: CreatePostCoreArgs): Post {
+      }
+
+  - __reason: Core layer - update post
+    type: file
+    filePath: src/core/update-post.ts
+    content: |
+      import { db, Post } from './shared.ts'
+
+      // TODO(ai-coder): Define the core args
+      export interface UpdatePostCoreArgs {
+        id: string;
+        title?: string;
+        content?: string;
+      }
+
+      // TODO(ai-coder): Implement the core method for creating a Post, using the db.updatePost functions
+      export function updatePostCore(args: UpdatePostCoreArgs): Post {
+      }
+
+  - __reason: Core layer - validation
+    type: file
+    filePath: src/core/validation.ts
+    content: |
+      export interface ValidatePostContentCoreArgs {
+        content: string;
+      }
+
+      // TODO(ai-coder): Implement the core method for validating post content
+      export function validatePostContentCore(args: ValidatePostContentCoreArgs): boolean {}
+
+  - __reason: Shared layer - database
+    type: file
+    filePath: src/core/shared.ts
+    content: |
+      import { Client } from "https://deno.land/x/postgres/mod.ts";
+
+      // TODO(ai-coder): Post type definition
+      export interface Post {
+        id: string;
+        title: string;
+        content: string;
+      }
+
+
+      // TODO(ai-coder): Define core factory dependencies interface
+      export interface CoreSharedFactoryDeps {
+        client: Client;
+      }
+
+      // TODO(ai-coder): Define DB operations interface
+      export interface Database {
+        createPost: (data: Omit<Post, 'id'>) => Post;
+        updatePost: (where: { id: string }, data: Partial<Omit<Post, 'id'>>) => Post;
+      }
+
+      // TODO(ai-coder): Factory function to create core utilities with injectable dependencies
+      export function createCoreSharedFactory() {
+        const db: Database = {
+          createPost: (data: Omit<Post, 'id'>): Promise<Post> => {},
+          updatePost: (where: { id: string }, data: Partial<Omit<Post, 'id'>>): Promise<Post> => {},
+        };
+
+        return { db };
+      }
+
+      export const { db } = createCoreSharedFactory({
+        client: new Client({
+          hostname: "localhost",
+          port: 5432,
+          user: "postgres",
+          password: Deno.env.get("DB_PASSWORD"),
+          database: "blog",
+        }),
+      });

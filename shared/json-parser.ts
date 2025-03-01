@@ -1,6 +1,6 @@
 export function parseMessageToJson(input: string) {
   // Regular expression to match JSON code blocks
-  const jsonCodeBlockRegex = /```json([\s\S]*?)```/g;
+  const jsonCodeBlockRegex = /```json\n([\s\S]*?)\n```/g;
 
   // Find all matches for JSON code blocks
   const matches = Array.from(input.matchAll(jsonCodeBlockRegex));
@@ -23,6 +23,6 @@ export function parseMessageToJson(input: string) {
     // Parse the JSON string into an object
     return JSON.parse(jsonString);
   } catch (error) {
-    throw new Error("Failed to parse JSON: " + error);
+    throw new Error("Failed to parse JSON: " + error + "\n\n" + jsonString);
   }
 }

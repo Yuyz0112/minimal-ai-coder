@@ -1,0 +1,196 @@
+id: json-based-todo-CLI
+name: CLI tool for managing JSON-based TODOs
+actions:
+  - __reason: Create design.md to outline the architecture, show dev/build/test/lint commands, and highlight test-friendly coding style.
+    type: file
+    filePath: design.md
+    content: |
+      # Architecture Design
+
+      This project implements a CLI-based CRUD system for managing users, organized into interface, workflow, and core layers.
+
+      ## Commands
+      - **dev**: `deno run -A src/index.ts`
+      - **build**: `echo 'No build step implemented yet'`
+      - **test**: `deno test`
+      - **lint**: `deno lint`
+
+      ## Test-Friendly Coding
+      Each function receives external dependencies as parameters if needed, facilitating mocking during tests.
+
+      ## Comment Placement
+      All comments are placed directly above each function or variable definition, with empty function bodies.
+  - __reason: Create the main entry file at src/index.ts, which uses a CLI framework to parse arguments and display help information.
+    type: file
+    filePath: src/index.ts
+    content: |
+      import { Command } from "https://deno.land/x/cliffy@v0.25.7/command/mod.ts";
+      import { createUser } from "./interface/create-user.ts";
+      import { deleteUser } from "./interface/delete-user.ts";
+
+      // TODO(ai-coder): Define CLI commands using Cliffy
+      const cli = new Command()
+        .name("user-cli")
+        .version("1.0.0")
+        .description("CLI for managing users")
+        .command("create <name:string>", "Create a new user")
+        .action((options, name) => {
+          createUser(name);
+        })
+        .command("delete <id:string>", "Delete a user by ID")
+        .action((options, id) => {
+          deleteUser(id);
+        })
+        .parse(Deno.args);
+  - __reason: Create interface file for CLI create user.
+    type: file
+    filePath: src/interface/create-user.ts
+    content: |
+      import { createUserWorkflow } from "../workflow/create-user.ts";
+
+      // TODO(ai-coder): call createUserWorkflow with the parsed args, transform args to workflow args if needed, display result to stdout if needed.
+      export function createUser(name: string) {
+      }
+  - __reason: Create interface file for CLI delete user.
+    type: file
+    filePath: src/interface/delete-user.ts
+    content: |
+      import { deleteUserWorkflow } from "../workflow/delete-user.ts";
+
+      // TODO(ai-coder): call deleteUserWorkflow with the parsed args, transform args to workflow args if needed, display result to stdout if needed.
+      export function deleteUser(id: string) {
+      }
+  - __reason: Create workflow file for create user.
+    type: file
+    filePath: src/workflow/create-user.ts
+    content: |
+      import { createUserCore } from "../core/create-user.ts";
+
+      // TODO(ai-coder): Define the workflow args
+      export interface CreateUserWorkflowArgs {
+        name: string;
+      }
+
+      export interface CreateUserWorkflowDeps {
+        createUserCore: typeof createUserCore;
+      }
+
+      // TODO(ai-coder): Factory function to create the createUserWorkflow function. The workflow function will orchestrate create user logic, transform workflow args to core args if needed
+      export function createUserWorkflowFactory(deps: CreateUserWorkflowDeps) {
+        return function createUserWorkflow(args: CreateUserWorkflowArgs) {
+        };
+      }
+
+      export const createUserWorkflow = createUserWorkflowFactory({ createUserCore });
+  - __reason: Create workflow file for delete user.
+    type: file
+    filePath: src/workflow/delete-user.ts
+    content: |
+      import { deleteUserCore } from "../core/delete-user.ts";
+
+      // TODO(ai-coder): Define the workflow args
+      export interface DeleteUserWorkflowArgs {
+        id: string;
+      }
+
+      export interface DeleteUserWorkflowDeps {
+        deleteUserCore: typeof deleteUserCore;
+      }
+
+      // TODO(ai-coder): Factory function to delete the deleteUserWorkflow function. The workflow function will orchestrate delete user logic, transform workflow args to core args if needed
+      export function deleteUserWorkflowFactory(deps: DeleteUserWorkflowDeps) {
+        return function deleteUserWorkflow(args: DeleteUserWorkflowArgs) {
+        };
+      }
+
+      export const deleteUserWorkflow = deleteUserWorkflowFactory({ deleteUserCore });
+  - __reason: Create core file for create user logic.
+    type: file
+    filePath: src/core/create-user.ts
+    content: |
+      import { readUsers, writeUsers, User } from "./shared.ts";
+
+      // TODO(ai-coder): Define the core args
+      export interface CreateUserCoreArgs {
+        name: string;
+      }
+
+      // TODO(ai-coder): Implement the core method for creating a user, using the readUsers/writeUsers functions
+      export function createUserCore(args: CreateUserCoreArgs): User {
+      }
+  - __reason: Create core file for delete user logic.
+    type: file
+    filePath: src/core/delete-user.ts
+    content: |
+      import { readUsers, writeUsers } from "./shared.ts";
+
+      // TODO(ai-coder): Define the core args
+      export interface DeleteUserCoreArgs {
+        id: string;
+      }
+
+      // TODO(ai-coder): Implement the core method for creating a user, using the readUsers/writeUsers functions. Check id before delete, print warning log if not found.
+      export function deleteUserCore(args: DeleteUserCoreArgs): void {
+      }
+  - __reason: Core shared file with Deno FS operations as injectable dependencies
+    type: file
+    filePath: src/core/shared.ts
+    content: |
+      // TODO(ai-coder): Define file operations dependencies interface
+      export interface FileSystemDeps {
+        readFile: (path: string) => string;
+        writeFile: (path: string, content: string) => void;
+        fileExists: (path: string) => boolean;
+      }
+
+      // TODO(ai-coder): Factory function to create core utilities with injectable dependencies
+      export function createCoreSharedFactory(deps: FileSystemDeps & { dataFilePath: string }) {
+        const { dataFilePath, readFile, writeFile, fileExists } = deps;
+
+        function ensureJsonFile(): void {
+          if (!fileExists(dataFilePath)) {
+            writeFile(dataFilePath, "[]");
+          }
+        }
+
+        function readUsers(): User[] {
+          ensureJsonFile();
+          const content = readFile(dataFilePath);
+          return JSON.parse(content);
+        }
+
+        function writeUsers(users: User[]): void {
+          writeFile(dataFilePath, JSON.stringify(users, null, 2));
+        }
+
+        return {
+          ensureJsonFile,
+          readUsers,
+          writeUsers
+        };
+      }
+
+      // Default implementation using Deno's native APIs
+      export const { 
+        ensureJsonFile,
+        readUsers,
+        writeUsers
+      } = createCoreSharedFactory({
+        dataFilePath: "users.json",
+        readFile: (path) => Deno.readTextFileSync(path),
+        writeFile: (path, content) => Deno.writeTextFileSync(path, content),
+        fileExists: (path) => {
+          try {
+            Deno.statSync(path);
+            return true;
+          } catch {
+            return false;
+          }
+        }
+      });
+
+      // TODO(ai-coder): User type definition
+      export interface User {
+        id: string;
+        name: string;
+      }
